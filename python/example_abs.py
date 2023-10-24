@@ -1,56 +1,49 @@
 from diff_tvr import DiffTVR
 import numpy as np
 import matplotlib.pyplot as plt
-
-from diff_tvr import *
+import time
 
 if __name__ == "__main__":
+    np.random.seed(0)
+    start = time.time()
 
     # Data
-    dx = 0.01
-    
-    data = []
-    for x in np.arange(0,1,dx):
-        data.append(abs(x-0.5))
-    data = np.array(data)
+    n = 1000
+    end = 1
+    x_coords = np.linspace(0, end, n+1)
+    data = abs(x_coords - 0.5)
 
     # True derivative
-    deriv_true = []
-    for x in np.arange(0,1,dx):
-        if x < 0.5:
-            deriv_true.append(-1)
-        else:
-            deriv_true.append(1)
-    deriv_true = np.array(deriv_true)
+    deriv_true = np.where(x_coords < 0.5, -1, 1)
 
     # Add noise
-    n = len(data)
-    data_noisy = data + np.random.normal(0,0.05,n)
-    
+    data_noisy = data + np.random.normal(0, 0.05, n+1)
+
     # Plot true and noisy signal
     fig1 = plt.figure()
-    plt.plot(data)
-    plt.plot(data_noisy)
+    plt.plot(x_coords, data)
+    plt.plot(x_coords, data_noisy)
     plt.title("Signal")
-    plt.legend(["True","Noisy"])
+    plt.legend(["True", "Noisy"])
 
     # Derivative with TVR
-    diff_tvr = DiffTVR(n,dx)
-    (deriv,_) = diff_tvr.get_deriv_tvr(
-        data=data_noisy, 
-        deriv_guess=np.full(n+1,0.0), 
+    dx = np.diff(x_coords)
+    diff_tvr = DiffTVR(n, dx, maxiter=None)
+    deriv, progress = diff_tvr.get_deriv_tvr(
+        data=data_noisy[:-1],
+        deriv_guess=np.ones(n + 1),
         alpha=0.2,
-        no_opt_steps=100
-        )
+        no_opt_steps=100,
+    )
 
     # Plot TVR derivative
     fig2 = plt.figure()
     plt.plot(deriv_true)
     plt.plot(deriv)
     plt.title("Derivative")
-    plt.legend(["True","TVR"])
+    plt.legend(["True", "TVR"])
 
     fig1.savefig('signal.png')
     fig2.savefig('derivative.png')
-
+    print(f'time: {(time.time() - start):.2f}')
     plt.show()
