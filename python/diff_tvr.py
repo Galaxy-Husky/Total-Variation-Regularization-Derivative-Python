@@ -114,8 +114,7 @@ class DiffTVR:
             np.array: Vector of length N+1
         """
 
-        return (self.a_mat_t.matvec(self.a_mat.matvec(deriv_curr)) -
-                self.a_mat_t.matvec(data - data[0]) + ln_mat @ deriv_curr)
+        return self.a_mat_t.matvec(self.a_mat.matvec(deriv_curr)) - self.a_mat_t.matvec(data) + ln_mat @ deriv_curr
 
     def make_hn_mat(self, ln_mat: np.array) -> LinearOperator:
         """Matrix in linear problem
@@ -166,7 +165,7 @@ class DiffTVR:
         """Get derivative via TVR over optimization steps
 
         Args:
-            data (np.array): Data of size N
+            data (np.array): Data of size N+1
             deriv_guess (np.array): Guess for derivative of size N+1
             alpha (float): Regularization parameter
             no_opt_steps (int): No. opt steps to run
@@ -177,11 +176,11 @@ class DiffTVR:
             Tuple[np.array,np.array]: First is the final derivative of size N+1,
             second is the stored derivatives if return_progress=True of size no_opt_steps+1 x N+1, else [].
         """
-
+        data = data[1:] - data[0]
         deriv_curr = deriv_guess
         deriv_st = []
         for opt_step in range(no_opt_steps):
-            update = self.get_deriv_tvr_update(data=data, deriv_curr=deriv_curr, alpha=alpha)
+            update = self.get_deriv_tvr_update(data, deriv_curr, alpha)
             deriv_curr += update
             if return_progress:
                 if opt_step % return_interval == 0:
