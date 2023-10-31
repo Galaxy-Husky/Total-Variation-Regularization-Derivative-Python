@@ -14,7 +14,7 @@ if __name__ == "__main__":
     def deriv_func(x):
         return np.where(x < 0.5, -1, 1)
 
-    n = 1000
+    n = 100
     x_coords = np.linspace(0, 1, n+1)
     data = func(x_coords)
 
@@ -40,6 +40,7 @@ if __name__ == "__main__":
         alpha=0.2,
         no_opt_steps=100,
     )
+    print(f'time: {(time.time() - start):.2f}')
 
     # Plot TVR derivative
     fig2 = plt.figure()
@@ -50,5 +51,4 @@ if __name__ == "__main__":
 
     fig1.savefig('signal.png')
     fig2.savefig('derivative.png')
-    print(f'time: {(time.time() - start):.2f}')
     plt.show()
